@@ -73,7 +73,21 @@ def chat_with_logs(request: ChatRequest):
         logs_chronological = list(reversed(logs))
         
         answer = ai_service.analyze_logs(request.message, logs_chronological)
-        return {"response": answer}
+from fastapi.responses import StreamingResponse
+
+@app.post("/chat/stream")
+def chat_with_logs_stream(request: ChatRequest):
+    def event_stream():
+        with Session(engine) as session:
+            # Need to re-fetch inside generator or pass data? 
+            # Better to fetch once:
+            logs = session.exec(select(LogEntry).order_by(LogEntry.timestamp.desc()).limit(10)).all()
+            logs_chronological = list(reversed(logs))
+            
+            for chunk in ai_service.analyze_logs_stream(request.message, logs_chronological):
+                yield chunk
+
+    return StreamingResponse(event_stream(), media_type="text/plain")
 
 if __name__ == "__main__":
     import uvicorn

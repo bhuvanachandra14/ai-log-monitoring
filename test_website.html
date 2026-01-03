@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Real Website</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; text-align: center; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; }
+        .error { background: #ffcccc; color: red; border: 1px solid red; }
+        .success { background: #ccffcc; color: green; border: 1px solid green; }
+    </style>
+</head>
+<body>
+    <h1>My Awesome Website</h1>
+    <p>Click these buttons to generate "Real" events!</p>
+
+    <button onclick="userLogin()">👤 User Login</button>
+    <button class="error" onclick="simulateCrash()">💥 Simulate Crash</button>
+    <button onclick="checkout()">🛒 Purchase Item</button>
+
+    <script>
+        // THIS IS THE SECRET SAUCE! 
+        // We point to your deployed log monitor:
+        const LOGGER_URL = "https://ai-log-monitoring-7yka.onrender.com/logs";
+
+        // This helper function sends the data to your dashboard
+        async function sendLog(level, message) {
+            try {
+                await fetch(LOGGER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        level: level,
+                        service: "my-awesome-website", // Your website's name
+                        message: message
+                    })
+                });
+                console.log(`Sent log: ${message}`);
+            } catch (err) {
+                console.error("Failed to log", err);
+            }
+        }
+
+        // --- Your Website Logic Below ---
+
+        function userLogin() {
+            alert("User Logged In!");
+            sendLog("INFO", "User 'Bhuvan' logged in successfully.");
+        }
+
+        function simulateCrash() {
+            alert("Oh no! The site crashed!");
+            sendLog("ERROR", "Uncaught TypeError: Cannot read property 'null' of undefined");
+        }
+
+        function checkout() {
+            alert("Ka-ching! Money made.");
+            sendLog("INFO", "User completed checkout - Order #999");
+        }
+    </script>
+</body>
+</html>

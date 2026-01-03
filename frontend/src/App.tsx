@@ -18,7 +18,7 @@ function App() {
               </svg>
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-white leading-none">Antigravity</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-white leading-none font-display">LogMonitor</h1>
               <span className="text-xs text-blue-400 font-medium tracking-wide uppercase">Log Intelligence Platform</span>
             </div>
           </div>

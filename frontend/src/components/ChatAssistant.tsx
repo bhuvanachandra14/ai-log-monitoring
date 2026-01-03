@@ -23,17 +23,39 @@ const ChatAssistant: React.FC = () => {
 
         const userMsg = input;
         setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+        // Create placeholder for assistant message
+        setMessages(prev => [...prev, { role: 'assistant', text: "" }]);
+
         setInput("");
         setLoading(true);
 
         try {
-            const res = await fetch(`${API_URL}/chat`, {
+            const response = await fetch(`${API_URL}/chat/stream`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userMsg })
             });
-            const data = await res.json();
-            setMessages(prev => [...prev, { role: 'assistant', text: data.response }]);
+
+            if (!response.body) return;
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                const chunkValue = decoder.decode(value, { stream: !done });
+
+                setMessages(prev => {
+                    const newMessages = [...prev];
+                    const lastMsg = newMessages[newMessages.length - 1];
+                    if (lastMsg.role === 'assistant') {
+                        lastMsg.text += chunkValue;
+                    }
+                    return newMessages;
+                });
+            }
         } catch (error) {
             setMessages(prev => [...prev, { role: 'assistant', text: "I'm having trouble retrieving the log analysis right now." }]);
         } finally {
